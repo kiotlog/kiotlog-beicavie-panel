@@ -1,0 +1,29 @@
+{
+  "type": "panel",
+  "name": "Kiotlog Beicavie Panel",
+  "id": "kiotlog-hives-panel",
+
+  "info": {
+    "description": "Kiotlog Beicavie Panel",
+    "author": {
+      "name": "Your Name"
+    },
+    "keywords": ["Kiotlog", "Beicavie"],
+    "logos": {
+      "small": "img/logo.svg",
+      "large": "img/logo.svg"
+    },
+    "links": [
+      {"name": "Website", "url": "https://github.com/kiotlog/kiotlog-beicavie-panel"},
+      {"name": "License", "url": "https://github.com/kiotlog/kiotlog-beicavie-panel/blob/master/LICENSE"}
+    ],
+    "screenshots": [],
+    "version": "%VERSION%",
+    "updated": "%TODAY%"
+  },
+
+  "dependencies": {
+    "grafanaVersion": "6.3.x",
+    "plugins": []
+  }
+}

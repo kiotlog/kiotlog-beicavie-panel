@@ -1,0 +1,29 @@
+{
+  "name": "kiotlog-beicavie-panel",
+  "version": "1.0.0",
+  "description": "Kiotlog Beicavie Panel",
+  "scripts": {
+    "build": "grafana-toolkit plugin:build",
+    "test": "grafana-toolkit plugin:test",
+    "dev": "grafana-toolkit plugin:dev",
+    "watch": "grafana-toolkit plugin:dev --watch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kiotlog/kiotlog-beicavie-panel.git"
+  },
+  "author": "Francesco Varano <francesco@trampolineup.com> (https://trampolineup.com)",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/kiotlog/kiotlog-beicavie-panel/issues",
+    "email": "team@trampolineup.com"
+  },
+  "devDependencies": {
+    "@grafana/data": "next",
+    "@grafana/toolkit": "next",
+    "@grafana/ui": "next"
+  },
+  "dependencies": {
+    "axios": "^0.19.2"
+  }
+}
