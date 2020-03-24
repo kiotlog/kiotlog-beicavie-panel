@@ -10,8 +10,8 @@
     },
     "keywords": ["Kiotlog", "Beicavie"],
     "logos": {
-      "small": "img/logo.svg",
-      "large": "img/logo.svg"
+      "small": "img/beicavie.png",
+      "large": "img/beicavie.png"
     },
     "links": [
       {"name": "Website", "url": "https://github.com/kiotlog/kiotlog-beicavie-panel"},
