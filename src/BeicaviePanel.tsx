@@ -14,6 +14,7 @@ interface Annotation {
   };
 }
 interface Device {
+  Id: string;
   Device: string;
   Annotations: Annotation[];
 }
@@ -27,10 +28,11 @@ export function BeicaviePanel(props: Props) {
   const [ editing, setEditing ] = useState(false);
 
   useEffect(() => {
-    if (!options.device) return;
-    console.log('DDDDD', options.device);
+    if (!options.device) { return; }
+    const replacedDevice = props.replaceVariables(options.device);
+    console.log('THE DEVICE:', replacedDevice);
     axios
-      .get(`http://127.0.0.1:8888/devices/${options.device}`, {
+      .get(`http://127.0.0.1:8888/devices/${replacedDevice}`, {
         headers: {
           'Content-Type': 'application/json',
         },
@@ -87,11 +89,11 @@ export function BeicaviePanel(props: Props) {
         .catch(err => {
           console.log('Error: ', err);
         });
-    } else if (options.device) {
+    } else if (device) {
       // modify annotation
       axios
         .post(
-          `http://127.0.0.1:8888/devices/${options.device}/annotations`,
+          `http://127.0.0.1:8888/devices/${device.Id}/annotations`,
           {
             Description: description,
             Data: {
@@ -115,7 +117,7 @@ export function BeicaviePanel(props: Props) {
           console.log('Error: ', err);
         });
     } else {
-      console.error('Could not save annotation... I have no deviceId')
+      console.error('Could not save annotation... I have no device');
     }
   };
 
