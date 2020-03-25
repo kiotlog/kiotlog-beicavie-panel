@@ -143,7 +143,7 @@ export function BeicaviePanel(props: Props) {
               textAlign: 'right',
             }}
           >
-            <Button variant="transparent" onClick={() => setEditing(true)}>
+            <Button variant="link" onClick={() => setEditing(true)}>
               Modifica
             </Button>
           </div>
