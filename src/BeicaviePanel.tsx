@@ -30,9 +30,11 @@ export function BeicaviePanel(props: Props) {
   useEffect(() => {
     if (!options.device) { return; }
     const replacedDevice = props.replaceVariables(options.device);
-    console.log('THE DEVICE:', replacedDevice);
+    const api = props.replaceVariables(options.api?.replace(/\/*$/, ''));
+    // console.log(`API is ${api}`);
+    // console.log('THE DEVICE:', replacedDevice);
     axios
-      .get(`http://127.0.0.1:8888/devices/${replacedDevice}`, {
+      .get(`${api}/devices/${replacedDevice}`, {
         headers: {
           'Content-Type': 'application/json',
         },
@@ -61,12 +63,14 @@ export function BeicaviePanel(props: Props) {
   };
 
   const saveAnnotation = (event: any) => {
+    const api = props.replaceVariables(options.api?.replace(/\/*$/, ''));
+
     if (annotation) {
       // create new annotation
       console.log('PUTTING Annotation', annotation);
       axios
         .put(
-          `http://127.0.0.1:8888/annotations/${annotation.Id}`,
+          `${api}/annotations/${annotation.Id}`,
           {
             Description: description,
             Data: {
@@ -93,7 +97,7 @@ export function BeicaviePanel(props: Props) {
       // modify annotation
       axios
         .post(
-          `http://127.0.0.1:8888/devices/${device.Id}/annotations`,
+          `${api}/devices/${device.Id}/annotations`,
           {
             Description: description,
             Data: {
