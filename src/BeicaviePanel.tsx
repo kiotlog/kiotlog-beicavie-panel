@@ -21,6 +21,7 @@ interface Device {
 
 export function BeicaviePanel(props: Props) {
   const { options, width, height } = props;
+  const [ deviceName, setDeviceName ] = useState<string | null>(null);
   const [ device, setDevice ] = useState<Device | null>(null);
   const [ annotation, setAnnotation ] = useState<Annotation | null>(null);
   const [ hives, setHives ] = useState(0);
@@ -28,13 +29,16 @@ export function BeicaviePanel(props: Props) {
   const [ editing, setEditing ] = useState(false);
 
   useEffect(() => {
-    if (!options.device) { return; }
-    const replacedDevice = props.replaceVariables(options.device);
+    setDeviceName(props.replaceVariables(options.device));
+  });
+
+  useEffect(() => {
+    if (!deviceName) { return; }
     const api = props.replaceVariables(options.api?.replace(/\/*$/, ''));
     // console.log(`API is ${api}`);
-    // console.log('THE DEVICE:', replacedDevice);
+    // console.log('THE DEVICE:', deviceName);
     axios
-      .get(`${api}/devices/${replacedDevice}`, {
+      .get(`${api}/devices/${deviceName}`, {
         headers: {
           'Content-Type': 'application/json',
         },
@@ -52,7 +56,7 @@ export function BeicaviePanel(props: Props) {
       .catch(err => {
         console.error(err);
       });
-  }, [options.device]);
+  }, [deviceName]);
 
   const handleDescriptionChange = (event: any) => {
     setDescription(event.target.value);
