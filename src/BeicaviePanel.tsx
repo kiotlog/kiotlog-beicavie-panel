@@ -199,6 +199,7 @@ export function BeicaviePanel(props: Props) {
               justifyContent: 'center',
             }}
           >
+            <img src="public/plugins/kiotlog-hives-panel/img/beicavie.png" />
             {hives}
           </h3>
           <p style={{ textAlign: 'center', fontSize: (props?.height || 288) / 9 }}>{description}</p>
