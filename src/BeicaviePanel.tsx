@@ -10,6 +10,7 @@ interface Props extends PanelProps<BeicavieOptions> {}
 interface Annotation {
   Id: string;
   Description: string;
+  UserDescription: string;
   Data: {
     Hives: number;
   };
@@ -24,8 +25,7 @@ export function BeicaviePanel(props: Props) {
   const { options, width, height } = props;
   const [deviceName, setDeviceName] = useState<string | null>(null);
   const [device, setDevice] = useState<Device | null>(null);
-  // const [ annotation, setAnnotation ] = useState<Annotation | null>(null);
-  const [name, setName] = useState('');
+  const [userdesc, setUserDesc] = useState('');
   const [hives, setHives] = useState(0);
   const [description, setDescription] = useState('');
   const [begin, setBegin] = useState(moment());
@@ -54,8 +54,7 @@ export function BeicaviePanel(props: Props) {
           return;
         }
         setDevice(res.data);
-        // setAnnotation(res.data.Annotations?.[0] || null);
-        setName(res.data.Meta.Description);
+        setUserDesc(res.data.Meta.UserDescription);
         setHives(res.data.Annotations?.[0]?.Data?.Hives || 0);
         setDescription(res.data.Annotations?.[0]?.Description || '');
       })
@@ -64,8 +63,8 @@ export function BeicaviePanel(props: Props) {
       });
   }, [deviceName]);
 
-  const onNameChange = (event: any) => {
-    setName(event.target.value);
+  const onUserDescChange = (event: any) => {
+    setUserDesc(event.target.value);
   };
 
   const handleDescriptionChange = (event: any) => {
@@ -85,35 +84,6 @@ export function BeicaviePanel(props: Props) {
   const saveAnnotation = (event: any) => {
     const api = props.replaceVariables(options.api?.replace(/\/*$/, ''));
 
-    // if (annotation) {
-    //   // create new annotation
-    //   console.log('PUTTING Annotation', annotation);
-    //   axios
-    //     .put(
-    //       `${api}/annotations/${annotation.Id}`,
-    //       {
-    //         Description: description,
-    //         Data: {
-    //           Hives: hives,
-    //         },
-    //       },
-    //       {
-    //         headers: {
-    //           'Content-Type': 'application/json',
-    //         },
-    //       }
-    //     )
-    //     .then(res => {
-    //       if (res.status >= 300) {
-    //         console.error('Error:', res.data);
-    //         return;
-    //       }
-    //       setEditing(false);
-    //     })
-    //     .catch(err => {
-    //       console.log('Error: ', err);
-    //     });
-    // } else
     if (device) {
       // modify annotation
       axios
@@ -141,7 +111,7 @@ export function BeicaviePanel(props: Props) {
             .put(`${api}/devices/${device.Id}`,
             {
               Meta: {
-                Description: name
+                UserDescription: userdesc
               }
             })
             .then(res => {
@@ -178,6 +148,9 @@ export function BeicaviePanel(props: Props) {
       <h3 style={{ textAlign: 'center' }}>
         {options.title} {device?.Device}
       </h3>
+      <h4 style={{ textAlign: 'center', fontSize: 12 }}>
+        {userdesc}
+      </h4>
       {device && !editing && (
         <>
           <div
@@ -186,7 +159,7 @@ export function BeicaviePanel(props: Props) {
             }}
           >
             <Button variant="link" onClick={() => setEditing(true)}>
-              Modifica
+            modifica i dati della bilancia
             </Button>
           </div>
           <h3
@@ -199,9 +172,13 @@ export function BeicaviePanel(props: Props) {
               justifyContent: 'center',
             }}
           >
-            {hives}
+            <img src="public/img/plugins/arnia.svg" alt="error"/>            
+            {hives} 
           </h3>
-          <p style={{ textAlign: 'center', fontSize: (props?.height || 288) / 9 }}>{description}</p>
+          <p style={{ 
+            textAlign: 'center', 
+            fontSize: (props?.height || 248) / 9,
+           }}>{description}</p>
         </>
       )}
       {device && editing && (
@@ -215,19 +192,18 @@ export function BeicaviePanel(props: Props) {
               justifyContent: 'center',
             }}
           >
-            <FormField label="Nome Bilancia" type="text" value={name} onChange={onNameChange} />
-            <FormField label="Arnie" type="number" value={hives} onChange={onInput} />
-            {/* <input type="number" name="hives" className="input-small gf-form-input width-10" value={hives} onChange={onInput} /> */}
-
+            <FormField
+              label="Bilancia"
+              inputEl={<textarea className="gf-form-input width-25" value={userdesc} onChange={onUserDescChange} />}
+              accept="number"
+            />
+            <FormField label="Arnie" inputWidth={5} type="number" value={hives} onChange={onInput} />
             <FormField
               label="Note"
               inputEl={<textarea className="gf-form-input width-25" value={description} onChange={handleDescriptionChange} />}
               accept="number"
             />
-            {/* <textarea className="gf-form-input" value={description} onChange={handleDescriptionChange} /> */}
-
-            {/* <Date value={} /> */}
-            <FormField label="Data" type="text" defaultValue={begin.format('YYYY-MM-DD HH:mm:ss')} onBlur={onBeginInput} />
+            <FormField label="Data" type="text" defaultValue={begin.format('DD-MM-YYYY HH:mm:ss')} onBlur={onBeginInput} />
           </div>
 
           <div
@@ -237,9 +213,9 @@ export function BeicaviePanel(props: Props) {
             }}
           >
             <Button variant="transparent" onClick={() => setEditing(false)}>
-              Annulla
+            esci senza salvare
             </Button>
-            <Button onClick={saveAnnotation}>Salva</Button>
+            <Button onClick={saveAnnotation}>salva le modifiche</Button>
           </div>
         </>
       )}
