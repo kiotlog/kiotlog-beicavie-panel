@@ -149,11 +149,18 @@ export function BeicaviePanel(props: Props) {
         {options.title} {device?.Device}
       </h3>
 
-      {device && !editing && (options.mode == 0 || options.mode == 1) && (
-        <h4 style={{ textAlign: 'center', fontSize: 12 }}>
+      {device && !editing && options.mode == 0 && (
+        <h4 style={{ textAlign: 'center', fontSize: 14 }}>
           {userdesc}
         </h4>
       )}
+
+      {device && !editing && options.mode == 1 && (
+        <h4 style={{ textAlign: 'center', fontSize: 24 }}>
+          {userdesc}
+        </h4>
+      )}
+
 
       {device && !editing && (
         <>
@@ -183,12 +190,20 @@ export function BeicaviePanel(props: Props) {
             </h3>
           )}
 
-          {(options.mode == 0 || options.mode == 3) && (
+          {options.mode == 0 && (
             <p style={{
               textAlign: 'center',
               fontSize: (props?.height || 248) / 18,
             }}>{description}</p>
           )}
+
+          {options.mode == 3 && (
+            <p style={{
+              textAlign: 'center',
+              fontSize: 24,
+            }}>{description}</p>
+          )}
+
         </>
       )}
       {device && editing && (
