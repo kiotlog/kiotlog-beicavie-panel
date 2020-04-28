@@ -5,7 +5,7 @@ import { BeicavieOptions } from 'types';
 import axios from 'axios';
 import moment from 'moment';
 
-interface Props extends PanelProps<BeicavieOptions> {}
+interface Props extends PanelProps<BeicavieOptions> { }
 
 interface Annotation {
   Id: string;
@@ -109,11 +109,11 @@ export function BeicaviePanel(props: Props) {
           }
           axios
             .put(`${api}/devices/${device.Id}`,
-            {
-              Meta: {
-                UserDescription: userdesc
-              }
-            })
+              {
+                Meta: {
+                  UserDescription: userdesc
+                }
+              })
             .then(res => {
               if (res.status >= 300) {
                 console.error('Error:', res.data);
@@ -148,9 +148,13 @@ export function BeicaviePanel(props: Props) {
       <h3 style={{ textAlign: 'center' }}>
         {options.title} {device?.Device}
       </h3>
-      <h4 style={{ textAlign: 'center', fontSize: 12 }}>
-        {userdesc}
-      </h4>
+
+      {device && !editing && (options.mode == 0 || options.mode == 1) && (
+        <h4 style={{ textAlign: 'center', fontSize: 12 }}>
+          {userdesc}
+        </h4>
+      )}
+
       {device && !editing && (
         <>
           <div
@@ -159,26 +163,32 @@ export function BeicaviePanel(props: Props) {
             }}
           >
             <Button variant="link" onClick={() => setEditing(true)}>
-            modifica i dati della bilancia
+              modifica i dati della bilancia
             </Button>
           </div>
-          <h3
-            style={{
+
+          {(options.mode == 0 || options.mode == 2) && (
+            <h3
+              style={{
+                textAlign: 'center',
+                fontSize: (props?.height || 248) / 2 / 1.2,
+                display: 'flex',
+                flex: 1,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <img src="public/img/plugins/arnia.svg" alt="error" width="100" height="100" />
+              {hives}
+            </h3>
+          )}
+
+          {(options.mode == 0 || options.mode == 3) && (
+            <p style={{
               textAlign: 'center',
-              fontSize: (props?.height || 248) / 2 / 1.2,
-              display: 'flex',
-              flex: 1,
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <img src="public/img/plugins/arnia.svg" alt="error" width="100" height="100"/>
-            {hives} 
-          </h3>
-          <p style={{ 
-            textAlign: 'center', 
-            fontSize: (props?.height || 248) / 18,
-           }}>{description}</p>
+              fontSize: (props?.height || 248) / 18,
+            }}>{description}</p>
+          )}
         </>
       )}
       {device && editing && (
@@ -192,17 +202,23 @@ export function BeicaviePanel(props: Props) {
               justifyContent: 'center',
             }}
           >
-            <FormField
-              label="Bilancia"
-              inputEl={<textarea className="gf-form-input width-25" value={userdesc} onChange={onUserDescChange} />}
-              accept="number"
-            />
-            <FormField label="Arnie" inputWidth={5} type="number" value={hives} onChange={onInput} />
-            <FormField
-              label="Note"
-              inputEl={<textarea className="gf-form-input width-25" value={description} onChange={handleDescriptionChange} />}
-              accept="number"
-            />
+            {(options.mode == 0 || options.mode == 1) && (
+              <FormField
+                label="Bilancia"
+                inputEl={<textarea className="gf-form-input width-25" value={userdesc} onChange={onUserDescChange} />}
+                accept="number"
+              />
+            )}
+            {(options.mode == 0 || options.mode == 2) && (
+              <FormField label="Arnie" inputWidth={5} type="number" value={hives} onChange={onInput} />
+            )}
+            {(options.mode == 0 || options.mode == 3) && (
+              <FormField
+                label="Note"
+                inputEl={<textarea className="gf-form-input width-25" value={description} onChange={handleDescriptionChange} />}
+                accept="number"
+              />
+            )}
             <FormField label="Data" inputWidth={15} type="text" defaultValue={begin.format('DD-MM-YYYY HH:mm:ss')} onBlur={onBeginInput} />
           </div>
 
@@ -213,7 +229,7 @@ export function BeicaviePanel(props: Props) {
             }}
           >
             <Button variant="transparent" onClick={() => setEditing(false)}>
-            esci senza salvare
+              esci senza salvare
             </Button>
             <Button onClick={saveAnnotation}>salva le modifiche</Button>
           </div>
