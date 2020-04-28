@@ -155,7 +155,7 @@ export function BeicaviePanel(props: Props) {
         <>
           <div
             style={{
-              textAlign: 'right',
+              textAlign: 'center',
             }}
           >
             <Button variant="link" onClick={() => setEditing(true)}>
@@ -172,12 +172,12 @@ export function BeicaviePanel(props: Props) {
               justifyContent: 'center',
             }}
           >
-            <img src="public/img/plugins/arnia.svg" alt="error"/>            
+            <img src="public/img/plugins/arnia.svg" alt="error" width="100" height="100"/>
             {hives} 
           </h3>
           <p style={{ 
             textAlign: 'center', 
-            fontSize: (props?.height || 248) / 9,
+            fontSize: (props?.height || 248) / 18,
            }}>{description}</p>
         </>
       )}
@@ -203,7 +203,7 @@ export function BeicaviePanel(props: Props) {
               inputEl={<textarea className="gf-form-input width-25" value={description} onChange={handleDescriptionChange} />}
               accept="number"
             />
-            <FormField label="Data" type="text" defaultValue={begin.format('DD-MM-YYYY HH:mm:ss')} onBlur={onBeginInput} />
+            <FormField label="Data" inputWidth={15} type="text" defaultValue={begin.format('DD-MM-YYYY HH:mm:ss')} onBlur={onBeginInput} />
           </div>
 
           <div
