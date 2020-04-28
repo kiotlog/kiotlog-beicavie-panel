@@ -169,7 +169,7 @@ export function BeicaviePanel(props: Props) {
               textAlign: 'center',
             }}
           >
-            <Button variant="link" onClick={() => setEditing(true)}>
+            <Button onClick={() => setEditing(true)}>
               modifica i dati della bilancia
             </Button>
           </div>
@@ -185,7 +185,9 @@ export function BeicaviePanel(props: Props) {
                 justifyContent: 'center',
               }}
             >
-              <img src="public/img/plugins/arnia.svg" alt="error" width="100" height="100" />
+              <object data={"public/img/plugins/arnia.svg"} type="image/jpg" width="120" height="120" >
+                <img src={"public/img/critical.svg"} alt="404" />
+              </object>
               {hives}
             </h3>
           )}
