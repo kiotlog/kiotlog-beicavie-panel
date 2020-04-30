@@ -17,6 +17,10 @@ export class BeicavieEditor extends PureComponent<PanelEditorProps<BeicavieOptio
     this.props.onOptionsChange({ ...this.props.options, device: target.value });
   };
 
+  onModeChanged = ({ target }: any) => {
+    this.props.onOptionsChange({ ...this.props.options, mode: target.value });
+  };
+
   render() {
     const { options } = this.props;
 
@@ -28,6 +32,12 @@ export class BeicavieEditor extends PureComponent<PanelEditorProps<BeicavieOptio
         <FormField label="Api" labelWidth={5} inputWidth={20} type="url" onChange={this.onApiChanged} value={options.api || ''} />
         <hr />
         <FormField label="Device" labelWidth={5} inputWidth={20} type="text" onChange={this.onDeviceChanged} value={options.device || ''} />
+        <hr />
+        <p>0 - modifica tutto</p>
+        <p>1 - modifica solo descrizione bilancia</p>
+        <p>2 - modifica solo numero arnie</p>
+        <p>3 - modifica solo delle note</p>
+        <FormField label="Mode" labelWidth={5} inputWidth={5} type="number" onChange={this.onModeChanged} value={options.mode || ''} />
       </div>
     );
   }
