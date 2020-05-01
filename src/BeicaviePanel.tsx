@@ -2,10 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { PanelProps } from '@grafana/data';
 import { FormField, Button } from '@grafana/ui';
 import { BeicavieOptions } from 'types';
-import axios from 'axios';
-import moment from 'moment';
+import axios, { AxiosError } from 'axios';
+import moment from 'moment-timezone';
 
-interface Props extends PanelProps<BeicavieOptions> { }
+interface Props extends PanelProps<BeicavieOptions> {}
 
 interface Annotation {
   Id: string;
@@ -19,6 +19,13 @@ interface Device {
   Id: string;
   Device: string;
   Annotations: Annotation[];
+  Meta: { UserDescription: string };
+}
+
+interface Error {
+  status?: number;
+  statusText?: string;
+  message: string;
 }
 
 export function BeicaviePanel(props: Props) {
@@ -30,38 +37,112 @@ export function BeicaviePanel(props: Props) {
   const [description, setDescription] = useState('');
   const [begin, setBegin] = useState(moment());
   const [editing, setEditing] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+
+  const api = props.replaceVariables(options.api?.replace(/\/*$/, ''));
+  const axiosConfig = {
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${options.apiKey}`,
+    },
+  };
 
   useEffect(() => {
     setDeviceName(props.replaceVariables(options.device));
   });
 
-  useEffect(() => {
-    if (!deviceName) {
-      return;
+  const handleAxiosError = (error: AxiosError<any> | Error) => {
+    const err = error as any;
+    if (err.isAxiosError && err.response) {
+      const { status, statusText } = err.response;
+      const message = err.response.data;
+      console.error('AxiosError getting device info', err.response);
+      setError({ status, statusText, message });
+    } else {
+      const error = err as Error;
+      const { message } = error;
+      console.error('Error getting device info', err);
+      setError({ message });
     }
-    const api = props.replaceVariables(options.api?.replace(/\/*$/, ''));
+  };
+
+  const updateDevice = (device: Device) => {
+    setDevice(device);
+    setUserDesc(device.Meta.UserDescription);
+    setHives(device.Annotations?.[0]?.Data?.Hives || 0);
+    setDescription(device.Annotations?.[0]?.Description || '');
+  };
+
+  const fetchDevice = async (deviceName: string) => {
     // console.log(`API is ${api}`);
     // console.log('THE DEVICE:', deviceName);
-    axios
-      .get(`${api}/devices/${deviceName}`, {
-        headers: {
-          'Content-Type': 'application/json',
+
+    try {
+      const res = await axios.get(`${api}/devices/${deviceName}`, axiosConfig);
+
+      // if (res.status !== 200) {
+      //   console.error('error getting device info');
+      //   return null;
+      // }
+      updateDevice(res.data);
+    } catch (err) {
+      handleAxiosError(err);
+    }
+
+    return device;
+  };
+
+  const saveDevice = async () => {
+    if (!device) {
+      console.error('Could not save device... I have no device');
+      return;
+    }
+
+    const res = await axios.put(
+      `${api}/devices/${device.Id}`,
+      {
+        Meta: {
+          UserDescription: userdesc,
         },
-      })
-      .then(res => {
-        if (res.status !== 200) {
-          console.log('error getting device info');
-          return;
-        }
-        setDevice(res.data);
-        setUserDesc(res.data.Meta.UserDescription);
-        setHives(res.data.Annotations?.[0]?.Data?.Hives || 0);
-        setDescription(res.data.Annotations?.[0]?.Description || '');
-      })
-      .catch(err => {
-        console.error(err);
-      });
+      },
+      axiosConfig
+    );
+    updateDevice(res.data);
+  };
+
+  const createAnnotation = async () => {
+    if (!device) {
+      console.error('Could not create annotation... I have no device');
+      return;
+    }
+
+    const res = await axios.post(
+      `${api}/devices/${device.Id}/annotations`,
+      {
+        Description: description,
+        Data: {
+          Hives: hives,
+        },
+        Begin: begin.toDate(),
+      },
+      axiosConfig
+    );
+
+    setHives(res.data.Data?.Hives || 0);
+    setDescription(res.data.Description || '');
+  };
+
+  useEffect(() => {
+    setError(null);
+    if (deviceName) {
+      fetchDevice(deviceName);
+    }
   }, [deviceName]);
+
+  const onEditButton = () => {
+    setBegin(moment());
+    setEditing(true);
+  }
 
   const onUserDescChange = (event: any) => {
     setUserDesc(event.target.value);
@@ -76,62 +157,39 @@ export function BeicaviePanel(props: Props) {
   };
 
   const onBeginInput = (event: any) => {
-    const newDate = moment(event.target.value);
+    const newDate = moment.tz(event.target.value, 'DD-MM-YYYY HH:mm:ss', 'Europe/Rome');
 
-    if (newDate.isValid()) { setBegin(newDate); }
-  };
-
-  const saveAnnotation = (event: any) => {
-    const api = props.replaceVariables(options.api?.replace(/\/*$/, ''));
-
-    if (device) {
-      // modify annotation
-      axios
-        .post(
-          `${api}/devices/${device.Id}/annotations`,
-          {
-            Description: description,
-            Data: {
-              Hives: hives,
-            },
-            Begin: begin.toDate(),
-          },
-          {
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          }
-        )
-        .then(res => {
-          if (res.status >= 300) {
-            console.error('Error:', res.data);
-            return;
-          }
-          axios
-            .put(`${api}/devices/${device.Id}`,
-              {
-                Meta: {
-                  UserDescription: userdesc
-                }
-              })
-            .then(res => {
-              if (res.status >= 300) {
-                console.error('Error:', res.data);
-                return;
-              }
-              setEditing(false);
-            })
-            .catch(err => {
-              console.log('Error: ', err);
-            });
-        })
-        .catch(err => {
-          console.log('Error: ', err);
-        });
-    } else {
-      console.error('Could not save annotation... I have no device');
+    if (newDate.isValid()) {
+      setBegin(newDate);
     }
   };
+
+  const saveAnnotation = async (event: any) => {
+    setError(null);
+    try {
+      await createAnnotation();
+      await saveDevice();
+      setEditing(false);
+    } catch (error) {
+      handleAxiosError(error);
+    }
+  };
+
+  const errorJsx = error && (
+    <div
+      style={{
+        textAlign: 'center',
+        color: 'red',
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100%',
+        justifyContent: 'center',
+      }}
+    >
+      <h3>Error {error.status}</h3>
+      <p>{error.message || error.statusText}</p>
+    </div>
+  );
 
   // console.log(props);
 
@@ -149,19 +207,11 @@ export function BeicaviePanel(props: Props) {
         {options.title} {device?.Device}
       </h3>
 
-      {device && !editing && options.mode == 0 && (
-        <h4 style={{ textAlign: 'center', fontSize: 14 }}>
-          {userdesc}
-        </h4>
-      )}
+      {device && !editing && options.mode == 0 && <h4 style={{ textAlign: 'center', fontSize: 14 }}>{userdesc}</h4>}
 
-      {device && !editing && options.mode == 1 && (
-        <h4 style={{ textAlign: 'center', fontSize: 24 }}>
-          {userdesc}
-        </h4>
-      )}
+      {device && !editing && options.mode == 1 && <h4 style={{ textAlign: 'center', fontSize: 24 }}>{userdesc}</h4>}
 
-
+      {errorJsx}
       {device && !editing && (
         <>
           <div
@@ -169,9 +219,7 @@ export function BeicaviePanel(props: Props) {
               textAlign: 'center',
             }}
           >
-            <Button onClick={() => setEditing(true)}>
-              modifica i dati della bilancia
-            </Button>
+            <Button onClick={onEditButton}>modifica i dati della bilancia</Button>
           </div>
 
           {(options.mode == 0 || options.mode == 2) && (
@@ -185,27 +233,34 @@ export function BeicaviePanel(props: Props) {
                 justifyContent: 'center',
               }}
             >
-              <object data={"public/img/plugins/arnia.svg"} type="image/jpg" width="120" height="120" >
-                <img src={"public/img/critical.svg"} alt="404" />
+              <object data={'public/img/plugins/arnia.svg'} type="image/jpg" width="120" height="120">
+                <img src={'public/img/critical.svg'} alt="404" />
               </object>
               {hives}
             </h3>
           )}
 
           {options.mode == 0 && (
-            <p style={{
-              textAlign: 'center',
-              fontSize: (props?.height || 248) / 18,
-            }}>{description}</p>
+            <p
+              style={{
+                textAlign: 'center',
+                fontSize: (props?.height || 248) / 18,
+              }}
+            >
+              {description}
+            </p>
           )}
 
           {options.mode == 3 && (
-            <p style={{
-              textAlign: 'center',
-              fontSize: 24,
-            }}>{description}</p>
+            <p
+              style={{
+                textAlign: 'center',
+                fontSize: 24,
+              }}
+            >
+              {description}
+            </p>
           )}
-
         </>
       )}
       {device && editing && (
@@ -226,9 +281,7 @@ export function BeicaviePanel(props: Props) {
                 accept="number"
               />
             )}
-            {(options.mode == 0 || options.mode == 2) && (
-              <FormField label="Arnie" inputWidth={5} type="number" value={hives} onChange={onInput} />
-            )}
+            {(options.mode == 0 || options.mode == 2) && <FormField label="Arnie" inputWidth={5} type="number" value={hives} onChange={onInput} />}
             {(options.mode == 0 || options.mode == 3) && (
               <FormField
                 label="Note"
