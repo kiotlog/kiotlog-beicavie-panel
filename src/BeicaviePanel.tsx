@@ -3,7 +3,7 @@ import { PanelProps } from '@grafana/data';
 import { FormField, Button } from '@grafana/ui';
 import { BeicavieOptions } from 'types';
 import axios, { AxiosError } from 'axios';
-import moment from 'moment';
+import moment from 'moment-timezone';
 
 interface Props extends PanelProps<BeicavieOptions> {}
 
@@ -108,7 +108,6 @@ export function BeicaviePanel(props: Props) {
       axiosConfig
     );
     updateDevice(res.data);
-    console.log('DONE DEVICE');
   };
 
   const createAnnotation = async () => {
@@ -131,7 +130,6 @@ export function BeicaviePanel(props: Props) {
 
     setHives(res.data.Data?.Hives || 0);
     setDescription(res.data.Description || '');
-    console.log('DONE ANNOTATION');
   };
 
   useEffect(() => {
@@ -140,6 +138,11 @@ export function BeicaviePanel(props: Props) {
       fetchDevice(deviceName);
     }
   }, [deviceName]);
+
+  const onEditButton = () => {
+    setBegin(moment());
+    setEditing(true);
+  }
 
   const onUserDescChange = (event: any) => {
     setUserDesc(event.target.value);
@@ -154,7 +157,7 @@ export function BeicaviePanel(props: Props) {
   };
 
   const onBeginInput = (event: any) => {
-    const newDate = moment(event.target.value);
+    const newDate = moment.tz(event.target.value, 'DD-MM-YYYY HH:mm:ss', 'Europe/Rome');
 
     if (newDate.isValid()) {
       setBegin(newDate);
@@ -216,7 +219,7 @@ export function BeicaviePanel(props: Props) {
               textAlign: 'center',
             }}
           >
-            <Button onClick={() => setEditing(true)}>modifica i dati della bilancia</Button>
+            <Button onClick={onEditButton}>modifica i dati della bilancia</Button>
           </div>
 
           {(options.mode == 0 || options.mode == 2) && (
