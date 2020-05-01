@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { PanelProps } from '@grafana/data';
 import { FormField, Button } from '@grafana/ui';
 import { BeicavieOptions } from 'types';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import moment from 'moment';
 
 interface Props extends PanelProps<BeicavieOptions> { }
@@ -19,6 +19,13 @@ interface Device {
   Id: string;
   Device: string;
   Annotations: Annotation[];
+  Meta: { UserDescription: string};
+}
+
+interface Error {
+  status?: number;
+  statusText?: string;
+  message: string;
 }
 
 export function BeicaviePanel(props: Props) {
@@ -30,37 +37,116 @@ export function BeicaviePanel(props: Props) {
   const [description, setDescription] = useState('');
   const [begin, setBegin] = useState(moment());
   const [editing, setEditing] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+
+  const api = props.replaceVariables(options.api?.replace(/\/*$/, ''));
+  const axiosConfig = 
+  {
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${options.apiKey}`
+    },
+  }
 
   useEffect(() => {
     setDeviceName(props.replaceVariables(options.device));
   });
 
-  useEffect(() => {
-    if (!deviceName) {
-      return;
+  const handleAxiosError = (error: AxiosError<any> | Error) => {
+    const err = error as any;
+    if (err.isAxiosError && err.response) {
+      const { status, statusText } = err.response;
+      const message = err.response.data;
+      console.error('AxiosError getting device info', err.response);
+      setError({ status, statusText, message });
+    } else {
+      const error = err as Error;
+      const { message } = error;
+      console.error('Error getting device info', err);
+      setError({ message });
     }
-    const api = props.replaceVariables(options.api?.replace(/\/*$/, ''));
+  };
+
+  const updateDevice = (device: Device) => {
+    setDevice(device);
+    setUserDesc(device.Meta.UserDescription);
+    setHives(device.Annotations?.[0]?.Data?.Hives || 0);
+    setDescription(device.Annotations?.[0]?.Description || '');
+  }
+
+  const fetchDevice = async (deviceName: string) => {
+
     // console.log(`API is ${api}`);
     // console.log('THE DEVICE:', deviceName);
-    axios
-      .get(`${api}/devices/${deviceName}`, {
-        headers: {
-          'Content-Type': 'application/json',
+
+    try {
+      const res = await axios.get(
+        `${api}/devices/${deviceName}`,
+        axiosConfig
+      );
+
+      // if (res.status !== 200) {
+      //   console.error('error getting device info');
+      //   return null;
+      // }
+      updateDevice(res.data);
+    } catch(err) {
+      handleAxiosError(err);
+    };
+
+    return device;
+  }
+
+  const saveDevice = async () => {
+    if (!device) {
+      console.error('Could not save device... I have no device');
+      return;
+    }
+
+    const res = await axios
+      .put(`${api}/devices/${device.Id}`,
+        {
+          Meta: {
+            UserDescription: userdesc
+          }
         },
-      })
-      .then(res => {
-        if (res.status !== 200) {
-          console.log('error getting device info');
-          return;
-        }
-        setDevice(res.data);
-        setUserDesc(res.data.Meta.UserDescription);
-        setHives(res.data.Annotations?.[0]?.Data?.Hives || 0);
-        setDescription(res.data.Annotations?.[0]?.Description || '');
-      })
-      .catch(err => {
-        console.error(err);
-      });
+        axiosConfig
+        );
+    updateDevice(res.data);
+    console.log('DONE DEVICE');
+
+  }
+
+  const createAnnotation = async () => {
+    if (!device) {
+      console.error('Could not create annotation... I have no device');
+      return;
+    }
+
+    const res = await axios
+      .post(
+        `${api}/devices/${device.Id}/annotations`,
+        {
+          Description: description,
+          Data: {
+            Hives: hives,
+          },
+          Begin: begin.toDate(),
+        },
+        axiosConfig
+      );
+
+    setHives(res.data.Data?.Hives || 0);
+    setDescription(res.data.Description || '');
+    console.log('DONE ANNOTATION');
+  }
+
+  useEffect(() => {
+    setError(null);
+    if (deviceName) {
+      fetchDevice(deviceName);
+    }
+
   }, [deviceName]);
 
   const onUserDescChange = (event: any) => {
@@ -81,57 +167,30 @@ export function BeicaviePanel(props: Props) {
     if (newDate.isValid()) { setBegin(newDate); }
   };
 
-  const saveAnnotation = (event: any) => {
-    const api = props.replaceVariables(options.api?.replace(/\/*$/, ''));
-
-    if (device) {
-      // modify annotation
-      axios
-        .post(
-          `${api}/devices/${device.Id}/annotations`,
-          {
-            Description: description,
-            Data: {
-              Hives: hives,
-            },
-            Begin: begin.toDate(),
-          },
-          {
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          }
-        )
-        .then(res => {
-          if (res.status >= 300) {
-            console.error('Error:', res.data);
-            return;
-          }
-          axios
-            .put(`${api}/devices/${device.Id}`,
-              {
-                Meta: {
-                  UserDescription: userdesc
-                }
-              })
-            .then(res => {
-              if (res.status >= 300) {
-                console.error('Error:', res.data);
-                return;
-              }
-              setEditing(false);
-            })
-            .catch(err => {
-              console.log('Error: ', err);
-            });
-        })
-        .catch(err => {
-          console.log('Error: ', err);
-        });
-    } else {
-      console.error('Could not save annotation... I have no device');
+  const saveAnnotation = async (event: any) => {
+    setError(null);
+    try {
+      await createAnnotation();
+      await saveDevice();
+      setEditing(false);
+    } catch(error) {
+      handleAxiosError(error);
     }
   };
+
+  const errorJsx = error && 
+    <div style={{
+      textAlign: "center",
+      color: "red",
+      display: "flex",
+      flexDirection: "column",
+      height: "100%",
+      justifyContent: "center"
+    }}>
+      <h3>Error {error.status}</h3>
+      <p>{error.message || error.statusText}</p>
+    </div>
+  
 
   // console.log(props);
 
@@ -161,7 +220,7 @@ export function BeicaviePanel(props: Props) {
         </h4>
       )}
 
-
+      {errorJsx}
       {device && !editing && (
         <>
           <div

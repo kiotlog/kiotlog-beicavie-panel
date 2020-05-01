@@ -13,6 +13,10 @@ export class BeicavieEditor extends PureComponent<PanelEditorProps<BeicavieOptio
     this.props.onOptionsChange({ ...this.props.options, api: target.value });
   };
 
+  onApiKeyChanged = ({ target }: any) => {
+    this.props.onOptionsChange({ ...this.props.options, apiKey: target.value });
+  };
+
   onDeviceChanged = ({ target }: any) => {
     this.props.onOptionsChange({ ...this.props.options, device: target.value });
   };
@@ -30,6 +34,7 @@ export class BeicavieEditor extends PureComponent<PanelEditorProps<BeicavieOptio
         <FormField label="Title" labelWidth={5} inputWidth={20} type="text" onChange={this.onTextChanged} value={options.title || ''} />
         <hr />
         <FormField label="Api" labelWidth={5} inputWidth={20} type="url" onChange={this.onApiChanged} value={options.api || ''} />
+        <FormField label="Api Key" labelWidth={5} inputWidth={20} type="text" onChange={this.onApiKeyChanged} value={options.apiKey || ''} />
         <hr />
         <FormField label="Device" labelWidth={5} inputWidth={20} type="text" onChange={this.onDeviceChanged} value={options.device || ''} />
         <hr />
