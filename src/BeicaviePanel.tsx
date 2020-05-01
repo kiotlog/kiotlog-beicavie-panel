@@ -5,7 +5,7 @@ import { BeicavieOptions } from 'types';
 import axios, { AxiosError } from 'axios';
 import moment from 'moment';
 
-interface Props extends PanelProps<BeicavieOptions> { }
+interface Props extends PanelProps<BeicavieOptions> {}
 
 interface Annotation {
   Id: string;
@@ -40,13 +40,12 @@ export function BeicaviePanel(props: Props) {
   const [error, setError] = useState<Error | null>(null);
 
   const api = props.replaceVariables(options.api?.replace(/\/*$/, ''));
-  const axiosConfig =
-  {
+  const axiosConfig = {
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${options.apiKey}`
+      Authorization: `Bearer ${options.apiKey}`,
     },
-  }
+  };
 
   useEffect(() => {
     setDeviceName(props.replaceVariables(options.device));
@@ -72,18 +71,14 @@ export function BeicaviePanel(props: Props) {
     setUserDesc(device.Meta.UserDescription);
     setHives(device.Annotations?.[0]?.Data?.Hives || 0);
     setDescription(device.Annotations?.[0]?.Description || '');
-  }
+  };
 
   const fetchDevice = async (deviceName: string) => {
-
     // console.log(`API is ${api}`);
     // console.log('THE DEVICE:', deviceName);
 
     try {
-      const res = await axios.get(
-        `${api}/devices/${deviceName}`,
-        axiosConfig
-      );
+      const res = await axios.get(`${api}/devices/${deviceName}`, axiosConfig);
 
       // if (res.status !== 200) {
       //   console.error('error getting device info');
@@ -92,10 +87,10 @@ export function BeicaviePanel(props: Props) {
       updateDevice(res.data);
     } catch (err) {
       handleAxiosError(err);
-    };
+    }
 
     return device;
-  }
+  };
 
   const saveDevice = async () => {
     if (!device) {
@@ -103,19 +98,18 @@ export function BeicaviePanel(props: Props) {
       return;
     }
 
-    const res = await axios
-      .put(`${api}/devices/${device.Id}`,
-        {
-          Meta: {
-            UserDescription: userdesc
-          }
+    const res = await axios.put(
+      `${api}/devices/${device.Id}`,
+      {
+        Meta: {
+          UserDescription: userdesc,
         },
-        axiosConfig
-      );
+      },
+      axiosConfig
+    );
     updateDevice(res.data);
     console.log('DONE DEVICE');
-
-  }
+  };
 
   const createAnnotation = async () => {
     if (!device) {
@@ -123,30 +117,28 @@ export function BeicaviePanel(props: Props) {
       return;
     }
 
-    const res = await axios
-      .post(
-        `${api}/devices/${device.Id}/annotations`,
-        {
-          Description: description,
-          Data: {
-            Hives: hives,
-          },
-          Begin: begin.toDate(),
+    const res = await axios.post(
+      `${api}/devices/${device.Id}/annotations`,
+      {
+        Description: description,
+        Data: {
+          Hives: hives,
         },
-        axiosConfig
-      );
+        Begin: begin.toDate(),
+      },
+      axiosConfig
+    );
 
     setHives(res.data.Data?.Hives || 0);
     setDescription(res.data.Description || '');
     console.log('DONE ANNOTATION');
-  }
+  };
 
   useEffect(() => {
     setError(null);
     if (deviceName) {
       fetchDevice(deviceName);
     }
-
   }, [deviceName]);
 
   const onUserDescChange = (event: any) => {
@@ -164,7 +156,9 @@ export function BeicaviePanel(props: Props) {
   const onBeginInput = (event: any) => {
     const newDate = moment(event.target.value);
 
-    if (newDate.isValid()) { setBegin(newDate); }
+    if (newDate.isValid()) {
+      setBegin(newDate);
+    }
   };
 
   const saveAnnotation = async (event: any) => {
@@ -178,19 +172,21 @@ export function BeicaviePanel(props: Props) {
     }
   };
 
-  const errorJsx = error &&
-    <div style={{
-      textAlign: "center",
-      color: "red",
-      display: "flex",
-      flexDirection: "column",
-      height: "100%",
-      justifyContent: "center"
-    }}>
+  const errorJsx = error && (
+    <div
+      style={{
+        textAlign: 'center',
+        color: 'red',
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100%',
+        justifyContent: 'center',
+      }}
+    >
       <h3>Error {error.status}</h3>
       <p>{error.message || error.statusText}</p>
     </div>
-
+  );
 
   // console.log(props);
 
@@ -208,17 +204,9 @@ export function BeicaviePanel(props: Props) {
         {options.title} {device?.Device}
       </h3>
 
-      {device && !editing && options.mode == 0 && (
-        <h4 style={{ textAlign: 'center', fontSize: 14 }}>
-          {userdesc}
-        </h4>
-      )}
+      {device && !editing && options.mode == 0 && <h4 style={{ textAlign: 'center', fontSize: 14 }}>{userdesc}</h4>}
 
-      {device && !editing && options.mode == 1 && (
-        <h4 style={{ textAlign: 'center', fontSize: 24 }}>
-          {userdesc}
-        </h4>
-      )}
+      {device && !editing && options.mode == 1 && <h4 style={{ textAlign: 'center', fontSize: 24 }}>{userdesc}</h4>}
 
       {errorJsx}
       {device && !editing && (
@@ -228,9 +216,7 @@ export function BeicaviePanel(props: Props) {
               textAlign: 'center',
             }}
           >
-            <Button onClick={() => setEditing(true)}>
-              modifica i dati della bilancia
-            </Button>
+            <Button onClick={() => setEditing(true)}>modifica i dati della bilancia</Button>
           </div>
 
           {(options.mode == 0 || options.mode == 2) && (
@@ -244,27 +230,34 @@ export function BeicaviePanel(props: Props) {
                 justifyContent: 'center',
               }}
             >
-              <object data={"public/img/plugins/arnia.svg"} type="image/jpg" width="120" height="120" >
-                <img src={"public/img/critical.svg"} alt="404" />
+              <object data={'public/img/plugins/arnia.svg'} type="image/jpg" width="120" height="120">
+                <img src={'public/img/critical.svg'} alt="404" />
               </object>
               {hives}
             </h3>
           )}
 
           {options.mode == 0 && (
-            <p style={{
-              textAlign: 'center',
-              fontSize: (props?.height || 248) / 18,
-            }}>{description}</p>
+            <p
+              style={{
+                textAlign: 'center',
+                fontSize: (props?.height || 248) / 18,
+              }}
+            >
+              {description}
+            </p>
           )}
 
           {options.mode == 3 && (
-            <p style={{
-              textAlign: 'center',
-              fontSize: 24,
-            }}>{description}</p>
+            <p
+              style={{
+                textAlign: 'center',
+                fontSize: 24,
+              }}
+            >
+              {description}
+            </p>
           )}
-
         </>
       )}
       {device && editing && (
@@ -285,9 +278,7 @@ export function BeicaviePanel(props: Props) {
                 accept="number"
               />
             )}
-            {(options.mode == 0 || options.mode == 2) && (
-              <FormField label="Arnie" inputWidth={5} type="number" value={hives} onChange={onInput} />
-            )}
+            {(options.mode == 0 || options.mode == 2) && <FormField label="Arnie" inputWidth={5} type="number" value={hives} onChange={onInput} />}
             {(options.mode == 0 || options.mode == 3) && (
               <FormField
                 label="Note"
