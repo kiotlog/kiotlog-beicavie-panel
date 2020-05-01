@@ -277,7 +277,7 @@ export function BeicaviePanel(props: Props) {
             {(options.mode == 0 || options.mode == 1) && (
               <FormField
                 label="Bilancia"
-                inputEl={<textarea className="gf-form-input width-25" value={userdesc} onChange={onUserDescChange} />}
+                inputEl={<textarea className="gf-form-input width-auto" value={userdesc} onChange={onUserDescChange} />}
                 accept="number"
               />
             )}
@@ -285,7 +285,7 @@ export function BeicaviePanel(props: Props) {
             {(options.mode == 0 || options.mode == 3) && (
               <FormField
                 label="Note"
-                inputEl={<textarea className="gf-form-input width-25" value={description} onChange={handleDescriptionChange} />}
+                inputEl={<textarea className="gf-form-input width-auto" value={description} onChange={handleDescriptionChange} />}
                 accept="number"
               />
             )}
