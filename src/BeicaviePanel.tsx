@@ -19,7 +19,7 @@ interface Device {
   Id: string;
   Device: string;
   Annotations: Annotation[];
-  Meta: { UserDescription: string};
+  Meta: { UserDescription: string };
 }
 
 interface Error {
@@ -40,7 +40,7 @@ export function BeicaviePanel(props: Props) {
   const [error, setError] = useState<Error | null>(null);
 
   const api = props.replaceVariables(options.api?.replace(/\/*$/, ''));
-  const axiosConfig = 
+  const axiosConfig =
   {
     headers: {
       'Content-Type': 'application/json',
@@ -90,7 +90,7 @@ export function BeicaviePanel(props: Props) {
       //   return null;
       // }
       updateDevice(res.data);
-    } catch(err) {
+    } catch (err) {
       handleAxiosError(err);
     };
 
@@ -111,7 +111,7 @@ export function BeicaviePanel(props: Props) {
           }
         },
         axiosConfig
-        );
+      );
     updateDevice(res.data);
     console.log('DONE DEVICE');
 
@@ -173,12 +173,12 @@ export function BeicaviePanel(props: Props) {
       await createAnnotation();
       await saveDevice();
       setEditing(false);
-    } catch(error) {
+    } catch (error) {
       handleAxiosError(error);
     }
   };
 
-  const errorJsx = error && 
+  const errorJsx = error &&
     <div style={{
       textAlign: "center",
       color: "red",
@@ -190,7 +190,7 @@ export function BeicaviePanel(props: Props) {
       <h3>Error {error.status}</h3>
       <p>{error.message || error.statusText}</p>
     </div>
-  
+
 
   // console.log(props);
 
