@@ -22,8 +22,8 @@ export class BeicavieEditor extends PureComponent<PanelEditorProps<BeicavieOptio
   };
 
   onModeChanged = ({ target }: any) => {
-    let mode = parseInt(target.value) || 0;
-    if (mode < 0 || mode > 3) mode=0;
+    let mode = parseInt(target.value, 10) || 0;
+    if (mode < 0 || mode > 3) { mode = 0; }
     this.props.onOptionsChange({ ...this.props.options, mode });
   };
 
