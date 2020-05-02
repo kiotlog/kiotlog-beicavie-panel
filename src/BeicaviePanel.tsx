@@ -142,7 +142,7 @@ export function BeicaviePanel(props: Props) {
   const onEditButton = () => {
     setBegin(moment());
     setEditing(true);
-  }
+  };
 
   const onUserDescChange = (event: any) => {
     setUserDesc(event.target.value);
@@ -209,7 +209,7 @@ export function BeicaviePanel(props: Props) {
     }
 
     img.dataset.imgIdx++;
-  }
+  };
 
   // console.log(props);
 
@@ -227,9 +227,9 @@ export function BeicaviePanel(props: Props) {
         {options.title} {device?.Device}
       </h3>
 
-      {device && !editing && options.mode == 0 && <h4 style={{ textAlign: 'center', fontSize: 14 }}>{userdesc}</h4>}
+      {device && !editing && options.mode === 0 && <h4 style={{ textAlign: 'center', fontSize: 14 }}>{userdesc}</h4>}
 
-      {device && !editing && options.mode == 1 && <h4 style={{ textAlign: 'center', fontSize: 24 }}>{userdesc}</h4>}
+      {device && !editing && options.mode === 1 && <h4 style={{ textAlign: 'center', fontSize: 24 }}>{userdesc}</h4>}
 
       {errorJsx}
       {device && !editing && (
@@ -242,7 +242,7 @@ export function BeicaviePanel(props: Props) {
             <Button onClick={onEditButton}>modifica i dati della bilancia</Button>
           </div>
 
-          {(options.mode == 0 || options.mode == 2) && (
+          {(options.mode === 0 || options.mode === 2) && (
             <h3
               style={{
                 textAlign: 'center',
@@ -260,7 +260,7 @@ export function BeicaviePanel(props: Props) {
             </h3>
           )}
 
-          {options.mode == 0 && (
+          {options.mode === 0 && (
             <p
               style={{
                 textAlign: 'center',
@@ -271,7 +271,7 @@ export function BeicaviePanel(props: Props) {
             </p>
           )}
 
-          {options.mode == 3 && (
+          {options.mode === 3 && (
             <p
               style={{
                 textAlign: 'center',
@@ -294,15 +294,15 @@ export function BeicaviePanel(props: Props) {
               justifyContent: 'center',
             }}
           >
-            {(options.mode == 0 || options.mode == 1) && (
+            {(options.mode === 0 || options.mode === 1) && (
               <FormField
                 label="Bilancia"
                 inputEl={<textarea className="gf-form-input width-auto" value={userdesc} onChange={onUserDescChange} />}
                 accept="number"
               />
             )}
-            {(options.mode == 0 || options.mode == 2) && <FormField label="Arnie" inputWidth={5} type="number" value={hives} onChange={onInput} />}
-            {(options.mode == 0 || options.mode == 3) && (
+            {(options.mode === 0 || options.mode === 2) && <FormField label="Arnie" inputWidth={5} type="number" value={hives} onChange={onInput} />}
+            {(options.mode === 0 || options.mode === 3) && (
               <FormField
                 label="Note"
                 inputEl={<textarea className="gf-form-input width-auto" value={description} onChange={handleDescriptionChange} />}
