@@ -191,6 +191,26 @@ export function BeicaviePanel(props: Props) {
     </div>
   );
 
+  const handleImage404Error = (e: { target: any; }) => {
+    // public/img/plugins/arnia.svg
+    // public/plugins/kiotlog-hives-panel/img/arnia.svg
+    // public/img/critical.svg
+
+    const img = e.target;
+
+    switch (img.dataset.imgIdx) {
+      case '1':
+        img.src = 'public/plugins/kiotlog-hives-panel/img/arnia.svg';
+        break;
+      default:
+        img.src = 'public/img/critical.svg';
+        img.alt = '404';
+        break;
+    }
+
+    img.dataset.imgIdx++;
+  }
+
   // console.log(props);
 
   return (
@@ -233,9 +253,9 @@ export function BeicaviePanel(props: Props) {
                 justifyContent: 'center',
               }}
             >
-              <object data={'public/img/plugins/arnia.svg'} type="image/jpg" width="120" height="120">
-                <img src={'public/img/critical.svg'} alt="404" />
-              </object>
+
+              <img src={'public/img/plugins/arnia.svg'} data-img-idx={1} style={{width: 120, height: 120}} onError={handleImage404Error} />
+
               {hives}
             </h3>
           )}
