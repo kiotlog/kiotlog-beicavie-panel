@@ -6,10 +6,10 @@ export interface BeicavieOptions {
   mode: number;
 }
 
-export const defaults: BeicavieOptions = {
-  title: 'Dettagli Bilancia',
-  api: 'http://localhost:8888',
-  apiKey: '',
-  device: '',
-  mode: 0,
-};
+// export const defaults: BeicavieOptions = {
+//   title: 'Dettagli Bilancia',
+//   api: 'http://localhost:8888',
+//   apiKey: '',
+//   device: '',
+//   mode: 0,
+// };

@@ -1,14 +1,17 @@
 {
+  "$schema": "https://raw.githubusercontent.com/grafana/grafana/master/docs/sources/developers/plugins/plugin.schema.json",
   "type": "panel",
   "name": "Kiotlog Beicavie Panel",
   "id": "kiotlog-hives-panel",
-
   "info": {
     "description": "Kiotlog Beicavie Panel",
     "author": {
       "name": "Officina delle Soluzioni"
     },
-    "keywords": ["Kiotlog", "Beicavie"],
+    "keywords": [
+        "Kiotlog",
+        "Beicavie"
+    ],
     "logos": {
       "small": "img/beicavie.svg",
       "large": "img/beicavie.svg"
@@ -21,9 +24,8 @@
     "version": "%VERSION%",
     "updated": "%TODAY%"
   },
-
   "dependencies": {
-    "grafanaVersion": "6.6.x",
+    "grafanaDependency": ">=7.0.0",
     "plugins": []
   }
 }

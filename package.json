@@ -19,13 +19,13 @@
     "email": "team@trampolineup.com"
   },
   "devDependencies": {
-    "@grafana/data": "next",
-    "@grafana/toolkit": "next",
-    "@grafana/ui": "next",
-    "@types/moment-timezone": "^0.5.13"
+    "@grafana/data": "^8.0.3",
+    "@grafana/toolkit": "^8.0.3",
+    "@grafana/ui": "^8.0.3",
+    "@types/moment-timezone": "^0.5.30"
   },
   "dependencies": {
     "axios": "^0.21.1",
-    "moment-timezone": "^0.5.28"
+    "moment-timezone": "^0.5.33"
   }
 }

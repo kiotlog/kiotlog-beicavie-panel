@@ -1,9 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { PanelProps } from '@grafana/data';
-import { FormField, Button } from '@grafana/ui';
+import { LegacyForms, Button } from '@grafana/ui';
 import { BeicavieOptions } from 'types';
 import axios, { AxiosError } from 'axios';
 import moment from 'moment-timezone';
+
+const { FormField } = LegacyForms;
 
 interface Props extends PanelProps<BeicavieOptions> {}
 
@@ -28,8 +30,9 @@ interface Error {
   message: string;
 }
 
-export function BeicaviePanel(props: Props) {
-  const { options, width, height } = props;
+export const BeicaviePanel: React.FC<Props> = ({ options, data, width, height, replaceVariables }) => {
+  // export function BeicaviePanel(props: Props) {
+  // const { options, width, height } = props;
   const [deviceName, setDeviceName] = useState<string | null>(null);
   const [device, setDevice] = useState<Device | null>(null);
   const [userdesc, setUserDesc] = useState('');
@@ -39,17 +42,24 @@ export function BeicaviePanel(props: Props) {
   const [editing, setEditing] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
-  const api = props.replaceVariables(options.api?.replace(/\/*$/, ''));
-  const axiosConfig = {
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${options.apiKey}`,
-    },
-  };
+  const resolvedDeviceName = replaceVariables(options.device);
+  const api = replaceVariables(options.api?.replace(/\/*$/, ''));
+  const axiosConfig = useMemo(
+    () => ({
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${options.apiKey}`,
+      },
+    }),
+    [options.apiKey]
+  );
 
   useEffect(() => {
-    setDeviceName(props.replaceVariables(options.device));
-  });
+    // const { device } = options;
+    if (resolvedDeviceName) {
+      setDeviceName(resolvedDeviceName);
+    }
+  }, [resolvedDeviceName]);
 
   const handleAxiosError = (error: AxiosError<any> | Error) => {
     const err = error as any;
@@ -73,24 +83,49 @@ export function BeicaviePanel(props: Props) {
     setDescription(device.Annotations?.[0]?.Description || '');
   };
 
-  const fetchDevice = async (deviceName: string) => {
-    // console.log(`API is ${api}`);
-    // console.log('THE DEVICE:', deviceName);
+  const fetchDevice = useCallback(
+    async (deviceName: string) => {
+      // console.log(`API is ${api}`);
+      // console.log('THE DEVICE:', deviceName);
 
-    try {
-      const res = await axios.get(`${api}/devices/${deviceName}`, axiosConfig);
+      let newDev: Device | null = null;
 
-      // if (res.status !== 200) {
-      //   console.error('error getting device info');
-      //   return null;
-      // }
-      updateDevice(res.data);
-    } catch (err) {
-      handleAxiosError(err);
-    }
+      try {
+        const res = await axios.get<Device>(`${api}/devices/${deviceName}`, axiosConfig);
 
-    return device;
-  };
+        // if (res.status !== 200) {
+        //   console.error('error getting device info');
+        //   return null;
+        // }
+        newDev = res.data;
+        updateDevice(newDev);
+      } catch (err) {
+        handleAxiosError(err);
+      }
+
+      return newDev;
+    },
+    [api, axiosConfig]
+  );
+
+  // const fetchDevice = async (deviceName: string) => {
+  //   // console.log(`API is ${api}`);
+  //   // console.log('THE DEVICE:', deviceName);
+
+  //   try {
+  //     const res = await axios.get(`${api}/devices/${deviceName}`, axiosConfig);
+
+  //     // if (res.status !== 200) {
+  //     //   console.error('error getting device info');
+  //     //   return null;
+  //     // }
+  //     updateDevice(res.data);
+  //   } catch (err) {
+  //     handleAxiosError(err);
+  //   }
+
+  //   return device;
+  // };
 
   const saveDevice = async () => {
     if (!device) {
@@ -137,7 +172,7 @@ export function BeicaviePanel(props: Props) {
     if (deviceName) {
       fetchDevice(deviceName);
     }
-  }, [deviceName]);
+  }, [deviceName, fetchDevice]);
 
   const onEditButton = () => {
     setBegin(moment());
@@ -191,7 +226,7 @@ export function BeicaviePanel(props: Props) {
     </div>
   );
 
-  const handleImage404Error = (e: { target: any; }) => {
+  const handleImage404Error = (e: { target: any }) => {
     // public/img/plugins/arnia.svg
     // public/plugins/kiotlog-hives-panel/img/arnia.svg
     // public/img/critical.svg
@@ -246,15 +281,19 @@ export function BeicaviePanel(props: Props) {
             <h3
               style={{
                 textAlign: 'center',
-                fontSize: (props?.height || 248) / 2 / 1.2,
+                fontSize: (height || 248) / 2 / 1.2,
                 display: 'flex',
                 flex: 1,
                 alignItems: 'center',
                 justifyContent: 'center',
               }}
             >
-
-              <img src={'public/img/plugins/arnia.svg'} data-img-idx={1} style={{width: 120, height: 120}} onError={handleImage404Error} />
+              <img
+                src={'public/img/plugins/arnia.svg'}
+                data-img-idx={1}
+                style={{ width: 120, height: 120 }}
+                onError={handleImage404Error}
+              />
 
               {hives}
             </h3>
@@ -264,7 +303,7 @@ export function BeicaviePanel(props: Props) {
             <p
               style={{
                 textAlign: 'center',
-                fontSize: (props?.height || 248) / 18,
+                fontSize: (height || 248) / 18,
               }}
             >
               {description}
@@ -301,15 +340,29 @@ export function BeicaviePanel(props: Props) {
                 accept="number"
               />
             )}
-            {(options.mode === 0 || options.mode === 2) && <FormField label="Arnie" inputWidth={5} type="number" value={hives} onChange={onInput} />}
+            {(options.mode === 0 || options.mode === 2) && (
+              <FormField label="Arnie" inputWidth={5} type="number" value={hives} onChange={onInput} />
+            )}
             {(options.mode === 0 || options.mode === 3) && (
               <FormField
                 label="Note"
-                inputEl={<textarea className="gf-form-input width-auto" value={description} onChange={handleDescriptionChange} />}
+                inputEl={
+                  <textarea
+                    className="gf-form-input width-auto"
+                    value={description}
+                    onChange={handleDescriptionChange}
+                  />
+                }
                 accept="number"
               />
             )}
-            <FormField label="Data" inputWidth={15} type="text" defaultValue={begin.format('DD-MM-YYYY HH:mm:ss')} onBlur={onBeginInput} />
+            <FormField
+              label="Data"
+              inputWidth={15}
+              type="text"
+              defaultValue={begin.format('DD-MM-YYYY HH:mm:ss')}
+              onBlur={onBeginInput}
+            />
           </div>
 
           <div
@@ -318,7 +371,7 @@ export function BeicaviePanel(props: Props) {
               padding: '10px',
             }}
           >
-            <Button variant="transparent" onClick={() => setEditing(false)}>
+            <Button variant="link" onClick={() => setEditing(false)}>
               esci senza salvare
             </Button>
             <Button onClick={saveAnnotation}>salva le modifiche</Button>
@@ -327,4 +380,4 @@ export function BeicaviePanel(props: Props) {
       )}
     </div>
   );
-}
+};
