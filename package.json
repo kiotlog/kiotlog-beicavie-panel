@@ -26,6 +26,6 @@
   },
   "dependencies": {
     "axios": "^0.21.1",
-    "moment-timezone": "^0.5.33"
+    "moment-timezone": "^0.5.35"
   }
 }
